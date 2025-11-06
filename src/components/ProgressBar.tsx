@@ -6,12 +6,10 @@ interface ProgressBarProps {
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
-  const clampedProgress = Math.max(0, Math.min(progress, 100));
-
   return (
     <View style={styles.container}>
-      <View style={[styles.bar, { width: `${clampedProgress}%` }]} />
-      <Text style={styles.text}>{clampedProgress}%</Text>
+      <View style={[styles.bar, { width: `${progress}%` }]} />
+      <Text style={styles.text}>{progress}%</Text>
     </View>
   );
 };
