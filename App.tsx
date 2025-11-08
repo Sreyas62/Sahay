@@ -65,6 +65,8 @@ function App(): React.JSX.Element {
     { label: "Bharath4ai" },
     { label: "BharathGPT" },
     { label: "QuantFactoryBharat" },
+    { label: "Sarvam" },
+    { label: "Sarvam2" },
   ];
 
   const HF_TO_GGUF = {
@@ -79,6 +81,8 @@ function App(): React.JSX.Element {
     "Bharath4ai": "bh4/IndicTrans3-beta-Q2_K-GGUF",
     "BharathGPT": "mradermacher/BharatGPT-3B-Indic-i1-GGUF",
     "QuantFactoryBharat": "QuantFactory/BharatGPT-3B-Indic-GGUF",
+    "Sarvam": "QuantFactory/sarvam-1-GGUF",
+    "Sarvam2":"mayupat13/sarvam-model-gguf"
   };
 
   // To handle the scroll view
