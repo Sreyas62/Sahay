@@ -19,12 +19,14 @@ interface AudioRecorderProps {
   onAudioRecorded: (audioPath: string) => void;
   isProcessing: boolean;
   disabled?: boolean;
+  fullWidth?: boolean;
 }
 
 export const AudioRecorder: React.FC<AudioRecorderProps> = ({
   onAudioRecorded,
   isProcessing,
   disabled = false,
+  fullWidth = false,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -181,6 +183,47 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
 
   const isDisabled = disabled || isProcessing;
 
+  if (fullWidth) {
+    // Large "Tap to speak" button for voice mode
+    return (
+      <View style={styles.fullWidthContainer}>
+        <TouchableOpacity
+          style={[
+            styles.tapToSpeakButton,
+            isRecording && styles.tapToSpeakRecording,
+            (isDisabled || !hasPermission) && styles.tapToSpeakDisabled,
+          ]}
+          onPress={handlePress}
+          disabled={isDisabled}
+        >
+          {isProcessing ? (
+            <>
+              <ActivityIndicator color="#FFFFFF" size="large" style={{ marginBottom: 8 }} />
+              <Text style={styles.tapToSpeakText}>Processing...</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.tapToSpeakText}>
+                {isRecording ? `Recording ${recordingDuration}s` : 'Tap to speak'}
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
+        {!hasPermission && (
+          <TouchableOpacity 
+            style={styles.permissionButtonLarge}
+            onPress={permissionDenied ? showPermissionAlert : requestPermissions}
+          >
+            <Text style={styles.permissionTextLarge}>
+              {permissionDenied ? '⚠️ Enable Microphone in Settings' : '🎤 Grant Microphone Permission'}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+
+  // Small button for inline mode
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -226,6 +269,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 8,
   },
+  fullWidthContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   recordButton: {
     width: 48,
     height: 48,
@@ -267,6 +315,36 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontWeight: '600',
   },
+  tapToSpeakButton: {
+    width: '100%',
+    paddingVertical: 10,
+    backgroundColor: '#6366F1',
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  tapToSpeakRecording: {
+    backgroundColor: '#EF4444',
+    shadowColor: '#EF4444',
+  },
+  tapToSpeakDisabled: {
+    backgroundColor: '#94A3B8',
+    shadowOpacity: 0.1,
+  },
+  tapToSpeakIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  tapToSpeakText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
   permissionButton: {
     marginTop: 8,
     paddingVertical: 4,
@@ -278,6 +356,21 @@ const styles = StyleSheet.create({
   },
   permissionText: {
     fontSize: 10,
+    color: '#92400E',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  permissionButtonLarge: {
+    marginTop: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+  },
+  permissionTextLarge: {
+    fontSize: 14,
     color: '#92400E',
     fontWeight: '600',
     textAlign: 'center',
