@@ -53,11 +53,23 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const textInputRef = useRef<TextInput>(null);
 
   const handleSend = async () => {
     if (!inputText.trim() || isGenerating) return;
-    await handleSendText(inputText.trim(), false);
+    
+    const textToSend = inputText.trim();
+    // Clear input immediately before async operation
     setInputText('');
+    
+    await handleSendText(textToSend, false);
+    
+    // Ensure input stays focused
+    setTimeout(() => {
+      if (textInputRef.current) {
+        textInputRef.current.focus();
+      }
+    }, 100);
   };
 
   const handleAudioRecorded = async (audioPath: string) => {
@@ -102,6 +114,18 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
     } else { setIsRecording(!isRecording); }
   };
 
+  // Health-specific prompts with language support
+  const getSystemPrompt = (language: SupportedLanguage): string => {
+    const prompts = {
+      'en': 'You are a health assistant. Provide first aid, symptom guidance, and medicine info. For emergencies, say: Call 108. Be brief and clear.',
+      'hi': 'आप स्वास्थ्य सहायक हैं। प्राथमिक उपचार, लक्षण और दवा की जानकारी दें। आपातकाल में 108 कॉल करें कहें। संक्षिप्त रहें।',
+      'ml': 'നിങ്ങൾ ആരോഗ്യ സഹായിയാണ്. പ്രഥമ ശുശ്രൂഷയും ലക്ഷണങ്ങളും നൽകുക. അടിയന്തിരമായി 108 വിളിക്കുക എന്ന് പറയുക.',
+      'kn': 'ನೀವು ಆರೋಗ್ಯ ಸಹಾಯಕರು. ಪ್ರಥಮ ಚಿಕಿತ್ಸೆ ಮತ್ತು ಲಕ್ಷಣಗಳನ್ನು ನೀಡಿ. ತುರ್ತಿನಲ್ಲಿ 108 ಕರೆ ಮಾಡಿ ಎಂದು ಹೇಳಿ.',
+      'auto': 'Health assistant. First aid and symptoms. Emergency: call 108. Respond in user language.'
+    };
+    return prompts[language] || prompts['auto'];
+  };
+
   const handleSendText = async (text: string, isVoice: boolean = false) => {
     if (!text.trim() || isGenerating) return;
     const userMessage: Message = { id: messages.length + 1, type: 'user', content: text, timestamp: new Date(), isVoice };
@@ -112,7 +136,7 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
     setMessages(prev => [...prev, { id: assistantMessageId, type: 'assistant', content: '', timestamp: new Date() }]);
     try {
       const llmMessages: LLMMessage[] = [
-        { role: 'system', content: 'You are a health assistant for Indian users. Provide guidance on symptoms, first aid, medicines, and healthcare. Always remind users to call 108 for emergencies. Respond in Hindi and English.' },
+        { role: 'system', content: getSystemPrompt(selectedLanguage) },
         ...messages.slice(1).map(msg => ({ role: msg.type as 'user' | 'assistant', content: msg.content })),
         { role: 'user', content: text }
       ];
@@ -185,7 +209,7 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
 
       {/* Language Selector */}
       <View style={styles.languageSelectorContainer}>
-        <Text style={styles.languageLabel}>Voice Language:</Text>
+        <Text style={styles.languageLabel}>Response Language:</Text>
         <View style={styles.languageButtons}>
           {(['en', 'hi', 'ml', 'kn'] as SupportedLanguage[]).map((lang) => (
             <TouchableOpacity
@@ -221,6 +245,7 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
             </TouchableOpacity>
             <View style={styles.inputWrapper}>
               <TextInput
+                ref={textInputRef}
                 style={styles.textInput}
                 placeholder="Type your message..."
                 placeholderTextColor="#9CA3AF"
@@ -228,7 +253,9 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
                 onChangeText={setInputText}
                 multiline
                 maxLength={500}
-                editable={!isGenerating && !isTranscribing}
+                editable={true}
+                autoFocus={false}
+                blurOnSubmit={false}
               />
             </View>
             <TouchableOpacity

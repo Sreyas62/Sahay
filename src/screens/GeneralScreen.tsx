@@ -31,7 +31,17 @@ interface GeneralScreenProps {
   whisperService: WhisperService;
 }
 
-const systemPrompt = `You are Sahay, a helpful AI assistant specialized in general conversations. You can speak multiple Indian languages including Hindi, English, Malayalam, Kannada, Tamil, Telugu, Bengali, Gujarati, Marathi, and Punjabi. Be friendly, concise, and helpful in your responses. When the user speaks in a specific language, respond in that same language.`;
+// Language-specific system prompts (concise to avoid hallucination)
+const getSystemPrompt = (language: SupportedLanguage): string => {
+  const prompts = {
+    'en': 'You are Sahay, a helpful AI assistant for daily conversations. Be concise and friendly. Answer questions clearly.',
+    'hi': 'आप सहाय हैं, एक सहायक AI असिस्टेंट। संक्षिप्त और स्पष्ट उत्तर दें। हिंदी में जवाब दें।',
+    'ml': 'നിങ്ങൾ സഹായം എന്ന AI സഹായിയാണ്. ചുരുക്കമായും വ്യക്തമായും മറുപടി നൽകുക. മലയാളത്തിൽ ഉത്തരം നൽകുക.',
+    'kn': 'ನೀವು ಸಹಾಯ್ ಎಂಬ AI ಸಹಾಯಕರು. ಸಂಕ್ಷಿಪ್ತವಾಗಿ ಮತ್ತು ಸ್ಪಷ್ಟವಾಗಿ ಉತ್ತರಿಸಿ. ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸಿ.',
+    'auto': 'You are Sahay. Respond in the same language as the user. Be concise and helpful.'
+  };
+  return prompts[language] || prompts['auto'];
+};
 
 const initialMessages: Message[] = [
   {
@@ -60,12 +70,24 @@ export function GeneralScreen({ onBack, llmService, whisperService }: GeneralScr
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const textInputRef = useRef<TextInput>(null);
 
   const handleSend = async () => {
     if (!inputText.trim() || isGenerating) return;
 
-    await handleSendText(inputText.trim(), false);
+    const textToSend = inputText.trim();
+    // Clear input immediately before async operation
     setInputText('');
+    
+    // Send the message
+    await handleSendText(textToSend, false);
+    
+    // Ensure input stays focused
+    setTimeout(() => {
+      if (textInputRef.current) {
+        textInputRef.current.focus();
+      }
+    }, 100);
   };
 
   const handleSendText = async (text: string, isVoiceInput: boolean) => {
@@ -83,7 +105,7 @@ export function GeneralScreen({ onBack, llmService, whisperService }: GeneralScr
 
     try {
       const llmMessages: LLMMessage[] = [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: getSystemPrompt(selectedLanguage) },
         ...messages.map(m => ({
           role: m.type === 'user' ? ('user' as const) : ('assistant' as const),
           content: m.content,
@@ -248,7 +270,7 @@ export function GeneralScreen({ onBack, llmService, whisperService }: GeneralScr
 
       {/* Language Selector */}
       <View style={styles.languageSelectorContainer}>
-        <Text style={styles.languageLabel}>Voice Language:</Text>
+        <Text style={styles.languageLabel}>Response Language:</Text>
         <View style={styles.languageButtons}>
           {(['en', 'hi', 'ml', 'kn'] as SupportedLanguage[]).map((lang) => (
             <TouchableOpacity
@@ -289,6 +311,7 @@ export function GeneralScreen({ onBack, llmService, whisperService }: GeneralScr
             </TouchableOpacity>
             <View style={styles.inputWrapper}>
               <TextInput
+                ref={textInputRef}
                 style={styles.textInput}
                 placeholder="Type your message..."
                 placeholderTextColor="#9CA3AF"
@@ -296,7 +319,9 @@ export function GeneralScreen({ onBack, llmService, whisperService }: GeneralScr
                 onChangeText={setInputText}
                 multiline
                 maxLength={500}
-                editable={!isGenerating && !isTranscribing}
+                editable={true}
+                autoFocus={false}
+                blurOnSubmit={false}
               />
             </View>
             <TouchableOpacity

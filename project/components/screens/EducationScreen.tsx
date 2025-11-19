@@ -53,11 +53,23 @@ export function EducationScreen({ onBack, llmService, whisperService }: Educatio
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const textInputRef = useRef<TextInput>(null);
 
   const handleSend = async () => {
     if (!inputText.trim() || isGenerating) return;
-    await handleSendText(inputText.trim(), false);
+    
+    const textToSend = inputText.trim();
+    // Clear input immediately before async operation
     setInputText('');
+    
+    await handleSendText(textToSend, false);
+    
+    // Ensure input stays focused
+    setTimeout(() => {
+      if (textInputRef.current) {
+        textInputRef.current.focus();
+      }
+    }, 100);
   };
 
   const handleAudioRecorded = async (audioPath: string) => {
@@ -133,6 +145,18 @@ export function EducationScreen({ onBack, llmService, whisperService }: Educatio
     }
   };
 
+  // Education-specific prompts with language support
+  const getSystemPrompt = (language: SupportedLanguage): string => {
+    const prompts = {
+      'en': 'You are an education assistant for students. Help with homework, concepts, and study tips. Explain clearly and simply.',
+      'hi': 'आप शिक्षा सहायक हैं। होमवर्क, अवधारणाओं और अध्ययन युक्तियों में मदद करें। सरल भाषा में समझाएं।',
+      'ml': 'നിങ്ങൾ വിദ്യാഭ്യാസ സഹായിയാണ്. ഗൃഹപാഠവും ആശയങ്ങളും സഹായിക്കുക. ലളിതമായി വിശദീകരിക്കുക.',
+      'kn': 'ನೀವು ಶಿಕ್ಷಣ ಸಹಾಯಕರು. ಮನೆಕೆಲಸ ಮತ್ತು ಪರಿಕಲ್ಪನೆಗಳಲ್ಲಿ ಸಹಾಯ ಮಾಡಿ. ಸರಳವಾಗಿ ವಿವರಿಸಿ.',
+      'auto': 'Education assistant. Help with homework and concepts. Explain simply. Use user language.'
+    };
+    return prompts[language] || prompts['auto'];
+  };
+
   const handleSendText = async (text: string, isVoice: boolean = false) => {
     if (!text.trim() || isGenerating) return;
     const userMessage: Message = { id: messages.length + 1, type: 'user', content: text, timestamp: new Date(), isVoice };
@@ -143,7 +167,7 @@ export function EducationScreen({ onBack, llmService, whisperService }: Educatio
     setMessages(prev => [...prev, { id: assistantMessageId, type: 'assistant', content: '', timestamp: new Date() }]);
     try {
       const llmMessages: LLMMessage[] = [
-        { role: 'system', content: 'You are an educational assistant for Indian students. Help with learning, homework, and study guidance in Hindi, English, and other Indian languages.' },
+        { role: 'system', content: getSystemPrompt(selectedLanguage) },
         ...messages.slice(1).map(msg => ({ role: msg.type as 'user' | 'assistant', content: msg.content })),
         { role: 'user', content: text }
       ];
@@ -216,7 +240,7 @@ export function EducationScreen({ onBack, llmService, whisperService }: Educatio
 
       {/* Language Selector */}
       <View style={styles.languageSelectorContainer}>
-        <Text style={styles.languageLabel}>Voice Language:</Text>
+        <Text style={styles.languageLabel}>Response Language:</Text>
         <View style={styles.languageButtons}>
           {(['en', 'hi', 'ml', 'kn'] as SupportedLanguage[]).map((lang) => (
             <TouchableOpacity
@@ -252,14 +276,17 @@ export function EducationScreen({ onBack, llmService, whisperService }: Educatio
             </TouchableOpacity>
             <View style={styles.inputWrapper}>
               <TextInput
+                ref={textInputRef}
                 style={styles.textInput}
-                placeholder="Type your message..."
+                placeholder="Type your question..."
                 placeholderTextColor="#9CA3AF"
                 value={inputText}
                 onChangeText={setInputText}
                 multiline
                 maxLength={500}
-                editable={!isGenerating && !isTranscribing}
+                editable={true}
+                autoFocus={false}
+                blurOnSubmit={false}
               />
             </View>
             <TouchableOpacity

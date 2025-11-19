@@ -50,11 +50,23 @@ export function LegalScreen({ onBack, llmService, whisperService }: LegalScreenP
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('en');
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const textInputRef = useRef<TextInput>(null);
 
   const handleSend = async () => {
     if (!inputText.trim() || isGenerating) return;
-    await handleSendText(inputText.trim(), false);
+    
+    const textToSend = inputText.trim();
+    // Clear input immediately before async operation
     setInputText('');
+    
+    await handleSendText(textToSend, false);
+    
+    // Ensure input stays focused
+    setTimeout(() => {
+      if (textInputRef.current) {
+        textInputRef.current.focus();
+      }
+    }, 100);
   };
 
   const handleAudioRecorded = async (audioPath: string) => {
@@ -103,6 +115,18 @@ export function LegalScreen({ onBack, llmService, whisperService }: LegalScreenP
     } else { setIsRecording(!isRecording); }
   };
 
+  // Legal-specific prompts with language support
+  const getSystemPrompt = (language: SupportedLanguage): string => {
+    const prompts = {
+      'en': 'You are a legal awareness assistant. Help identify scams, explain rights, and provide fraud tips. Mention helplines: Cyber Crime 1930, Women 1091.',
+      'hi': 'आप कानूनी जागरूकता सहायक हैं। धोखाधड़ी पहचानें, अधिकार बताएं। हेल्पलाइन: साइबर क्राइम 1930, महिला 1091।',
+      'ml': 'നിങ്ങൾ നിയമ അവബോധ സഹായിയാണ്. വഞ്ചന തിരിച്ചറിയാൻ സഹായിക്കുക. ഹെൽപ്പ്‌ലൈൻ: സൈബർ 1930, വനിത 1091.',
+      'kn': 'ನೀವು ಕಾನೂನು ಜಾಗೃತಿ ಸಹಾಯಕರು. ವಂಚನೆ ಗುರುತಿಸಿ ಮತ್ತು ಹಕ್ಕುಗಳನ್ನು ತಿಳಿಸಿ. ಹೆಲ್ಪ್‌ಲೈನ್: ಸೈಬರ್ 1930, ಮಹಿಳಾ 1091.',
+      'auto': 'Legal awareness assistant. Identify scams and explain rights. Helplines: 1930, 1091. Use user language.'
+    };
+    return prompts[language] || prompts['auto'];
+  };
+
   const handleSendText = async (text: string, isVoice: boolean = false) => {
     if (!text.trim() || isGenerating) return;
     const userMessage: Message = { id: messages.length + 1, type: 'user', content: text, timestamp: new Date(), isVoice };
@@ -112,7 +136,7 @@ export function LegalScreen({ onBack, llmService, whisperService }: LegalScreenP
     setMessages(prev => [...prev, { id: assistantMessageId, type: 'assistant', content: '', timestamp: new Date() }]);
     try {
       const llmMessages: LLMMessage[] = [
-        { role: 'system', content: 'You are a legal and fraud protection assistant for Indian users. Help recognize scams, understand legal rights, and provide guidance in Hindi and English.' },
+        { role: 'system', content: getSystemPrompt(selectedLanguage) },
         ...messages.slice(1).map(msg => ({ role: msg.type as 'user' | 'assistant', content: msg.content })),
         { role: 'user', content: text }
       ];
@@ -177,7 +201,7 @@ export function LegalScreen({ onBack, llmService, whisperService }: LegalScreenP
 
       {/* Language Selector */}
       <View style={styles.languageSelectorContainer}>
-        <Text style={styles.languageLabel}>Voice Language:</Text>
+        <Text style={styles.languageLabel}>Response Language:</Text>
         <View style={styles.languageButtons}>
           {(['en', 'hi', 'ml', 'kn'] as SupportedLanguage[]).map((lang) => (
             <TouchableOpacity
@@ -213,6 +237,7 @@ export function LegalScreen({ onBack, llmService, whisperService }: LegalScreenP
             </TouchableOpacity>
             <View style={styles.inputWrapper}>
               <TextInput
+                ref={textInputRef}
                 style={styles.textInput}
                 placeholder="Type your message..."
                 placeholderTextColor="#9CA3AF"
@@ -220,7 +245,9 @@ export function LegalScreen({ onBack, llmService, whisperService }: LegalScreenP
                 onChangeText={setInputText}
                 multiline
                 maxLength={500}
-                editable={!isGenerating && !isTranscribing}
+                editable={true}
+                autoFocus={false}
+                blurOnSubmit={false}
               />
             </View>
             <TouchableOpacity

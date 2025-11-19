@@ -50,11 +50,23 @@ export function FrontlineScreen({ onBack, llmService, whisperService }: Frontlin
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('en');
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const textInputRef = useRef<TextInput>(null);
 
   const handleSend = async () => {
     if (!inputText.trim() || isGenerating) return;
-    await handleSendText(inputText.trim(), false);
+    
+    const textToSend = inputText.trim();
+    // Clear input immediately before async operation
     setInputText('');
+    
+    await handleSendText(textToSend, false);
+    
+    // Ensure input stays focused
+    setTimeout(() => {
+      if (textInputRef.current) {
+        textInputRef.current.focus();
+      }
+    }, 100);
   };
 
   const handleAudioRecorded = async (audioPath: string) => {
@@ -118,6 +130,18 @@ export function FrontlineScreen({ onBack, llmService, whisperService }: Frontlin
     } else { setIsRecording(!isRecording); }
   };
 
+  // Frontline worker-specific prompts with language support
+  const getSystemPrompt = (language: SupportedLanguage): string => {
+    const prompts = {
+      'en': 'You assist ASHA and frontline health workers. Help with community health, records, child care, and vaccines. Be practical.',
+      'hi': 'आप आशा और स्वास्थ्य कार्यकर्ताओं की सहायता करते हैं। सामुदायिक स्वास्थ्य, रिकॉर्ड, बाल देखभाल में मदद करें। व्यावहारिक रहें।',
+      'ml': 'നിങ്ങൾ ആശാ പ്രവർത്തകരെ സഹായിക്കുന്നു. കമ്മ്യൂണിറ്റി ആരോഗ്യം, രേഖകൾ, കുട്ടികളുടെ പരിചരണം. പ്രായോഗികമായിരിക്കുക.',
+      'kn': 'ನೀವು ಆಶಾ ಕಾರ್ಯಕರ್ತರಿಗೆ ಸಹಾಯ ಮಾಡುತ್ತೀರಿ. ಸಮುದಾಯ ಆರೋಗ್ಯ, ದಾಖಲೆಗಳು, ಮಕ್ಕಳ ಆರೈಕೆ. ಪ್ರಾಯೋಗಿಕವಾಗಿರಿ.',
+      'auto': 'Assistant for ASHA workers. Community health, records, child care. Be practical. Use user language.'
+    };
+    return prompts[language] || prompts['auto'];
+  };
+
   const handleSendText = async (text: string, isVoice: boolean = false) => {
     if (!text.trim() || isGenerating) return;
     const userMessage: Message = { id: messages.length + 1, type: 'user', content: text, timestamp: new Date(), isVoice };
@@ -127,7 +151,7 @@ export function FrontlineScreen({ onBack, llmService, whisperService }: Frontlin
     setMessages(prev => [...prev, { id: assistantMessageId, type: 'assistant', content: '', timestamp: new Date() }]);
     try {
       const llmMessages: LLMMessage[] = [
-        { role: 'system', content: 'You are an assistant for ASHA workers and frontline health workers in India. Provide guidance on health visits, medicine information, record keeping, and community health in Hindi and English.' },
+        { role: 'system', content: getSystemPrompt(selectedLanguage) },
         ...messages.slice(1).map(msg => ({ role: msg.type as 'user' | 'assistant', content: msg.content })),
         { role: 'user', content: text }
       ];
@@ -192,7 +216,7 @@ export function FrontlineScreen({ onBack, llmService, whisperService }: Frontlin
 
       {/* Language Selector */}
       <View style={styles.languageSelectorContainer}>
-        <Text style={styles.languageLabel}>Voice Language:</Text>
+        <Text style={styles.languageLabel}>Response Language:</Text>
         <View style={styles.languageButtons}>
           {(['en', 'hi', 'ml', 'kn'] as SupportedLanguage[]).map((lang) => (
             <TouchableOpacity
@@ -228,6 +252,7 @@ export function FrontlineScreen({ onBack, llmService, whisperService }: Frontlin
             </TouchableOpacity>
             <View style={styles.inputWrapper}>
               <TextInput
+                ref={textInputRef}
                 style={styles.textInput}
                 placeholder="Type your message..."
                 placeholderTextColor="#9CA3AF"
@@ -235,7 +260,9 @@ export function FrontlineScreen({ onBack, llmService, whisperService }: Frontlin
                 onChangeText={setInputText}
                 multiline
                 maxLength={500}
-                editable={!isGenerating && !isTranscribing}
+                editable={true}
+                autoFocus={false}
+                blurOnSubmit={false}
               />
             </View>
             <TouchableOpacity
