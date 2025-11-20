@@ -9,6 +9,8 @@ import { AudioRecorder } from '../../../src/components/AudioRecorder';
 import { QuickAction } from '../QuickAction';
 import { LLMService, Message as LLMMessage } from '../../../src/services/LLMService';
 import { WhisperService, SupportedLanguage } from '../../../src/services/WhisperService';
+import { ChatHistoryService, Chat } from '../../../src/services/ChatHistoryService';
+import { ChatHistoryList } from '../../../src/components/ChatHistoryList';
 
 type Message = {
   id: number;
@@ -52,8 +54,76 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('hi');
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [chatHistory, setChatHistory] = useState<Chat[]>([]);
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const textInputRef = useRef<TextInput>(null);
+
+  React.useEffect(() => {
+    loadChatHistory();
+  }, []);
+
+  React.useEffect(() => {
+    if (messages.length > 1 && currentChatId) {
+      saveCurrentChat();
+    }
+  }, [messages]);
+
+  const loadChatHistory = async () => {
+    try {
+      const chats = await ChatHistoryService.getAllChats('health');
+      setChatHistory(chats);
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+  };
+
+  const saveCurrentChat = async () => {
+    if (!currentChatId || messages.length <= 1) return;
+    try {
+      await ChatHistoryService.updateChatMessages('health', currentChatId, messages);
+      await loadChatHistory();
+    } catch (error) {
+      console.error('Error saving chat:', error);
+    }
+  };
+
+  const createNewChat = async () => {
+    setMessages(initialMessages);
+    setShowQuickQuestions(true);
+    setCurrentChatId(null);
+    setShowHistory(false);
+  };
+
+  const loadChat = async (chatId: string) => {
+    try {
+      const chat = await ChatHistoryService.getChat('health', chatId);
+      if (chat) {
+        setMessages(chat.messages.length > 0 ? chat.messages : initialMessages);
+        setSelectedLanguage(chat.language as SupportedLanguage);
+        setCurrentChatId(chat.id);
+        setShowQuickQuestions(chat.messages.length === 0);
+        setShowHistory(false);
+      }
+    } catch (error) {
+      console.error('Error loading chat:', error);
+      Alert.alert('Error', 'Failed to load chat');
+    }
+  };
+
+  const deleteChat = async (chatId: string) => {
+    try {
+      await ChatHistoryService.deleteChat('health', chatId);
+      await loadChatHistory();
+      if (currentChatId === chatId) {
+        createNewChat();
+      }
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+      Alert.alert('Error', 'Failed to delete chat');
+    }
+  };
 
   const handleSend = async () => {
     if (!inputText.trim() || isGenerating) return;
@@ -132,6 +202,15 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
     setMessages(prev => [...prev, userMessage]);
     setShowQuickQuestions(false);
     setIsGenerating(true);
+
+    if (!currentChatId) {
+      try {
+        const newChat = await ChatHistoryService.createChat('health', text, selectedLanguage);
+        setCurrentChatId(newChat.id);
+      } catch (error) {
+        console.error('Error creating chat:', error);
+      }
+    }
     const assistantMessageId = messages.length + 2;
     setMessages(prev => [...prev, { id: assistantMessageId, type: 'assistant', content: '', timestamp: new Date() }]);
     try {
@@ -167,7 +246,12 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
             <Icon name="heart-pulse" size={24} color="#FFFFFF" />
             <Text style={styles.headerText}>Health & Wellness</Text>
           </View>
-          <View style={styles.headerSpacer} />
+          <TouchableOpacity 
+            onPress={() => setShowHistory(true)} 
+            style={styles.historyButton}
+          >
+            <Icon name="history" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
       </LinearGradient>
 
@@ -287,6 +371,17 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
           </>
         )}
       </View>
+
+      {/* Chat History Modal */}
+      {showHistory && (
+        <ChatHistoryList
+          chats={chatHistory}
+          onClose={() => setShowHistory(false)}
+          onNewChat={createNewChat}
+          onSelectChat={loadChat}
+          onDeleteChat={deleteChat}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -323,8 +418,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  headerSpacer: {
+  historyButton: {
     width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emergencyBanner: {
     backgroundColor: '#FEE2E2',

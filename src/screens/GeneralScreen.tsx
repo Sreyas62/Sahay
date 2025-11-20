@@ -16,6 +16,8 @@ import RNFS from 'react-native-fs';
 import { LLMService, Message as LLMMessage } from '../services/LLMService';
 import { WhisperService, SupportedLanguage } from '../services/WhisperService';
 import { AudioRecorder } from '../components/AudioRecorder';
+import { ChatHistoryService, Chat } from '../services/ChatHistoryService';
+import { ChatHistoryList } from '../components/ChatHistoryList';
 
 interface Message {
   id: number;
@@ -69,8 +71,79 @@ export function GeneralScreen({ onBack, llmService, whisperService }: GeneralScr
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('en');
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [chatHistory, setChatHistory] = useState<Chat[]>([]);
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const textInputRef = useRef<TextInput>(null);
+
+  // Load chat history on mount
+  React.useEffect(() => {
+    loadChatHistory();
+  }, []);
+
+  // Save current chat when messages change
+  React.useEffect(() => {
+    if (messages.length > 1 && currentChatId) {
+      saveCurrentChat();
+    }
+  }, [messages]);
+
+  const loadChatHistory = async () => {
+    try {
+      const chats = await ChatHistoryService.getAllChats('general');
+      setChatHistory(chats);
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+  };
+
+  const saveCurrentChat = async () => {
+    if (!currentChatId || messages.length <= 1) return;
+
+    try {
+      await ChatHistoryService.updateChatMessages('general', currentChatId, messages);
+      await loadChatHistory();
+    } catch (error) {
+      console.error('Error saving chat:', error);
+    }
+  };
+
+  const createNewChat = async () => {
+    setMessages(initialMessages);
+    setShowQuickQuestions(true);
+    setCurrentChatId(null);
+    setShowHistory(false);
+  };
+
+  const loadChat = async (chatId: string) => {
+    try {
+      const chat = await ChatHistoryService.getChat('general', chatId);
+      if (chat) {
+        setMessages(chat.messages.length > 0 ? chat.messages : initialMessages);
+        setSelectedLanguage(chat.language as SupportedLanguage);
+        setCurrentChatId(chat.id);
+        setShowQuickQuestions(chat.messages.length === 0);
+        setShowHistory(false);
+      }
+    } catch (error) {
+      console.error('Error loading chat:', error);
+      Alert.alert('Error', 'Failed to load chat');
+    }
+  };
+
+  const deleteChat = async (chatId: string) => {
+    try {
+      await ChatHistoryService.deleteChat('general', chatId);
+      await loadChatHistory();
+      if (currentChatId === chatId) {
+        createNewChat();
+      }
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+      Alert.alert('Error', 'Failed to delete chat');
+    }
+  };
 
   const handleSend = async () => {
     if (!inputText.trim() || isGenerating) return;
@@ -102,6 +175,16 @@ export function GeneralScreen({ onBack, llmService, whisperService }: GeneralScr
     setMessages(prev => [...prev, userMessage]);
     setShowQuickQuestions(false);
     setIsGenerating(true);
+
+    // Create new chat if this is the first user message
+    if (!currentChatId) {
+      try {
+        const newChat = await ChatHistoryService.createChat('general', text, selectedLanguage);
+        setCurrentChatId(newChat.id);
+      } catch (error) {
+        console.error('Error creating chat:', error);
+      }
+    }
 
     try {
       const llmMessages: LLMMessage[] = [
@@ -195,7 +278,12 @@ export function GeneralScreen({ onBack, llmService, whisperService }: GeneralScr
             <Icon name="chat" size={24} color="#FFFFFF" />
             <Text style={styles.headerText}>General Chat</Text>
           </View>
-          <View style={styles.headerSpacer} />
+          <TouchableOpacity 
+            onPress={() => setShowHistory(true)} 
+            style={styles.historyButton}
+          >
+            <Icon name="history" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
       </LinearGradient>
 
@@ -366,6 +454,17 @@ export function GeneralScreen({ onBack, llmService, whisperService }: GeneralScr
           </>
         )}
       </View>
+
+      {/* Chat History Modal */}
+      {showHistory && (
+        <ChatHistoryList
+          chats={chatHistory}
+          onClose={() => setShowHistory(false)}
+          onNewChat={createNewChat}
+          onSelectChat={loadChat}
+          onDeleteChat={deleteChat}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -403,8 +502,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  headerSpacer: {
+  historyButton: {
     width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   messagesContainer: {
     flex: 1,
