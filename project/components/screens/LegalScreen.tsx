@@ -147,10 +147,10 @@ export function LegalScreen({ onBack, llmService, whisperService }: LegalScreenP
   // Legal-specific prompts with language support
   const getSystemPrompt = (language: SupportedLanguage): string => {
     const prompts = {
-      'en': 'You are a legal awareness assistant. Help identify scams, explain rights, and provide fraud tips. Mention helplines: Cyber Crime 1930, Women 1091.',
-      'hi': 'आप कानूनी जागरूकता सहायक हैं। धोखाधड़ी पहचानें, अधिकार बताएं। हेल्पलाइन: साइबर क्राइम 1930, महिला 1091।',
-      'ml': 'നിങ്ങൾ നിയമ അവബോധ സഹായിയാണ്. വഞ്ചന തിരിച്ചറിയാൻ സഹായിക്കുക. ഹെൽപ്പ്‌ലൈൻ: സൈബർ 1930, വനിത 1091.',
-      'kn': 'ನೀವು ಕಾನೂನು ಜಾಗೃತಿ ಸಹಾಯಕರು. ವಂಚನೆ ಗುರುತಿಸಿ ಮತ್ತು ಹಕ್ಕುಗಳನ್ನು ತಿಳಿಸಿ. ಹೆಲ್ಪ್‌ಲೈನ್: ಸೈಬರ್ 1930, ಮಹಿಳಾ 1091.',
+      'en': 'You are a legal awareness assistant. IMPORTANT: Respond ONLY in English. Help identify scams, explain rights in English. Helplines: Cyber 1930, Women 1091.',
+      'hi': 'आप कानूनी जागरूकता सहायक हैं। महत्वपूर्ण: केवल हिंदी में उत्तर दें। धोखाधड़ी पहचानें, अधिकार हिंदी में बताएं। हेल्पलाइन: 1930, 1091।',
+      'ml': 'നിങ്ങൾ നിയമ അവബോധ സഹായിയാണ്. പ്രധാനം: മലയാളത്തിൽ മാത്രം മറുപടി നൽകുക. വഞ്ചന തിരിച്ചറിയാൻ മലയാളത്തിൽ സഹായിക്കുക. ഹെൽപ്പ്‌ലൈൻ: 1930, 1091.',
+      'kn': 'ನೀವು ಕಾನೂನು ಜಾಗೃತಿ ಸಹಾಯಕರು. ಮುಖ್ಯ: ಕೇವಲ ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸಿ. ವಂಚನೆ ಗುರುತಿಸಿ ಮತ್ತು ಹಕ್ಕುಗಳನ್ನು ಕನ್ನಡದಲ್ಲಿ ತಿಳಿಸಿ. ಹೆಲ್ಪ್‌ಲೈನ್: 1930, 1091.',
       'auto': 'Legal awareness assistant. Identify scams and explain rights. Helplines: 1930, 1091. Use user language.'
     };
     return prompts[language] || prompts['auto'];

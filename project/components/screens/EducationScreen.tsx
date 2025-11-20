@@ -177,10 +177,10 @@ export function EducationScreen({ onBack, llmService, whisperService }: Educatio
   // Education-specific prompts with language support
   const getSystemPrompt = (language: SupportedLanguage): string => {
     const prompts = {
-      'en': 'You are an education assistant for students. Help with homework, concepts, and study tips. Explain clearly and simply.',
-      'hi': 'आप शिक्षा सहायक हैं। होमवर्क, अवधारणाओं और अध्ययन युक्तियों में मदद करें। सरल भाषा में समझाएं।',
-      'ml': 'നിങ്ങൾ വിദ്യാഭ്യാസ സഹായിയാണ്. ഗൃഹപാഠവും ആശയങ്ങളും സഹായിക്കുക. ലളിതമായി വിശദീകരിക്കുക.',
-      'kn': 'ನೀವು ಶಿಕ್ಷಣ ಸಹಾಯಕರು. ಮನೆಕೆಲಸ ಮತ್ತು ಪರಿಕಲ್ಪನೆಗಳಲ್ಲಿ ಸಹಾಯ ಮಾಡಿ. ಸರಳವಾಗಿ ವಿವರಿಸಿ.',
+      'en': 'You are an education assistant. IMPORTANT: Respond ONLY in English. Help with homework, concepts, and study tips in English. Explain clearly in English.',
+      'hi': 'आप शिक्षा सहायक हैं। महत्वपूर्ण: केवल हिंदी में उत्तर दें। होमवर्क, अवधारणाओं और अध्ययन युक्तियों में हिंदी में मदद करें। हिंदी में समझाएं।',
+      'ml': 'നിങ്ങൾ വിദ്യാഭ്യാസ സഹായിയാണ്. പ്രധാനം: മലയാളത്തിൽ മാത്രം മറുപടി നൽകുക. ഗൃഹപാഠവും ആശയങ്ങളും മലയാളത്തിൽ സഹായിക്കുക. മലയാളത്തിൽ വിശദീകരിക്കുക.',
+      'kn': 'ನೀವು ಶಿಕ್ಷಣ ಸಹಾಯಕರು. ಮುಖ್ಯ: ಕೇವಲ ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸಿ. ಮನೆಕೆಲಸ ಮತ್ತು ಪರಿಕಲ್ಪನೆಗಳಲ್ಲಿ ಕನ್ನಡದಲ್ಲಿ ಸಹಾಯ ಮಾಡಿ. ಕನ್ನಡದಲ್ಲಿ ಸ್ಪಷ್ಟವಾಗಿ ವಿವರಿಸಿ.',
       'auto': 'Education assistant. Help with homework and concepts. Explain simply. Use user language.'
     };
     return prompts[language] || prompts['auto'];

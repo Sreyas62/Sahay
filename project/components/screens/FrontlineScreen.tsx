@@ -162,10 +162,10 @@ export function FrontlineScreen({ onBack, llmService, whisperService }: Frontlin
   // Frontline worker-specific prompts with language support
   const getSystemPrompt = (language: SupportedLanguage): string => {
     const prompts = {
-      'en': 'You assist ASHA and frontline health workers. Help with community health, records, child care, and vaccines. Be practical.',
-      'hi': 'आप आशा और स्वास्थ्य कार्यकर्ताओं की सहायता करते हैं। सामुदायिक स्वास्थ्य, रिकॉर्ड, बाल देखभाल में मदद करें। व्यावहारिक रहें।',
-      'ml': 'നിങ്ങൾ ആശാ പ്രവർത്തകരെ സഹായിക്കുന്നു. കമ്മ്യൂണിറ്റി ആരോഗ്യം, രേഖകൾ, കുട്ടികളുടെ പരിചരണം. പ്രായോഗികമായിരിക്കുക.',
-      'kn': 'ನೀವು ಆಶಾ ಕಾರ್ಯಕರ್ತರಿಗೆ ಸಹಾಯ ಮಾಡುತ್ತೀರಿ. ಸಮುದಾಯ ಆರೋಗ್ಯ, ದಾಖಲೆಗಳು, ಮಕ್ಕಳ ಆರೈಕೆ. ಪ್ರಾಯೋಗಿಕವಾಗಿರಿ.',
+      'en': 'You assist ASHA and frontline health workers. IMPORTANT: Respond ONLY in English. Help with community health, records, child care in English.',
+      'hi': 'आप आशा और स्वास्थ्य कार्यकर्ताओं की सहायता करते हैं। महत्वपूर्ण: केवल हिंदी में उत्तर दें। सामुदायिक स्वास्थ्य, रिकॉर्ड, बाल देखभाल में हिंदी में मदद करें।',
+      'ml': 'നിങ്ങൾ ആശാ പ്രവർത്തകരെ സഹായിക്കുന്നു. പ്രധാനം: മലയാളത്തിൽ മാത്രം മറുപടി നൽകുക. കമ്മ്യൂണിറ്റി ആരോഗ്യം, രേഖകൾ മലയാളത്തിൽ സഹായിക്കുക.',
+      'kn': 'ನೀವು ಆಶಾ ಕಾರ್ಯಕರ್ತರಿಗೆ ಸಹಾಯ ಮಾಡುತ್ತೀರಿ. ಮುಖ್ಯ: ಕೇವಲ ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸಿ. ಸಮುದಾಯ ಆರೋಗ್ಯ, ದಾಖಲೆಗಳು ಕನ್ನಡದಲ್ಲಿ ಸಹಾಯ ಮಾಡಿ.',
       'auto': 'Assistant for ASHA workers. Community health, records, child care. Be practical. Use user language.'
     };
     return prompts[language] || prompts['auto'];

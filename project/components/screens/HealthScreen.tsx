@@ -187,10 +187,10 @@ export function HealthScreen({ onBack, llmService, whisperService }: HealthScree
   // Health-specific prompts with language support
   const getSystemPrompt = (language: SupportedLanguage): string => {
     const prompts = {
-      'en': 'You are a health assistant. Provide first aid, symptom guidance, and medicine info. For emergencies, say: Call 108. Be brief and clear.',
-      'hi': 'आप स्वास्थ्य सहायक हैं। प्राथमिक उपचार, लक्षण और दवा की जानकारी दें। आपातकाल में 108 कॉल करें कहें। संक्षिप्त रहें।',
-      'ml': 'നിങ്ങൾ ആരോഗ്യ സഹായിയാണ്. പ്രഥമ ശുശ്രൂഷയും ലക്ഷണങ്ങളും നൽകുക. അടിയന്തിരമായി 108 വിളിക്കുക എന്ന് പറയുക.',
-      'kn': 'ನೀವು ಆರೋಗ್ಯ ಸಹಾಯಕರು. ಪ್ರಥಮ ಚಿಕಿತ್ಸೆ ಮತ್ತು ಲಕ್ಷಣಗಳನ್ನು ನೀಡಿ. ತುರ್ತಿನಲ್ಲಿ 108 ಕರೆ ಮಾಡಿ ಎಂದು ಹೇಳಿ.',
+      'en': 'You are a health assistant. IMPORTANT: Respond ONLY in English. Provide first aid, symptom guidance, and medicine info. For emergencies, say: Call 108. Be brief and clear in English.',
+      'hi': 'आप स्वास्थ्य सहायक हैं। महत्वपूर्ण: केवल हिंदी में उत्तर दें। प्राथमिक उपचार, लक्षण और दवा की जानकारी हिंदी में दें। आपातकाल में 108 कॉल करें कहें।',
+      'ml': 'നിങ്ങൾ ആരോഗ്യ സഹായിയാണ്. പ്രധാനം: മലയാളത്തിൽ മാത്രം മറുപടി നൽകുക. പ്രഥമ ശുശ്രൂഷയും ലക്ഷണങ്ങളും മലയാളത്തിൽ നൽകുക. അടിയന്തിരമായി 108 വിളിക്കുക.',
+      'kn': 'ನೀವು ಆರೋಗ್ಯ ಸಹಾಯಕರು. ಮುಖ್ಯ: ಕೇವಲ ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸಿ. ಪ್ರಥಮ ಚಿಕಿತ್ಸೆ ಮತ್ತು ಲಕ್ಷಣಗಳನ್ನು ಕನ್ನಡದಲ್ಲಿ ನೀಡಿ. ತುರ್ತಿನಲ್ಲಿ 108 ಕರೆ ಮಾಡಿ.',
       'auto': 'Health assistant. First aid and symptoms. Emergency: call 108. Respond in user language.'
     };
     return prompts[language] || prompts['auto'];

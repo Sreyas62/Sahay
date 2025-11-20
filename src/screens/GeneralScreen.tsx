@@ -36,10 +36,10 @@ interface GeneralScreenProps {
 // Language-specific system prompts (concise to avoid hallucination)
 const getSystemPrompt = (language: SupportedLanguage): string => {
   const prompts = {
-    'en': 'You are Sahay, a helpful AI assistant for daily conversations. Be concise and friendly. Answer questions clearly.',
-    'hi': 'आप सहाय हैं, एक सहायक AI असिस्टेंट। संक्षिप्त और स्पष्ट उत्तर दें। हिंदी में जवाब दें।',
-    'ml': 'നിങ്ങൾ സഹായം എന്ന AI സഹായിയാണ്. ചുരുക്കമായും വ്യക്തമായും മറുപടി നൽകുക. മലയാളത്തിൽ ഉത്തരം നൽകുക.',
-    'kn': 'ನೀವು ಸಹಾಯ್ ಎಂಬ AI ಸಹಾಯಕರು. ಸಂಕ್ಷಿಪ್ತವಾಗಿ ಮತ್ತು ಸ್ಪಷ್ಟವಾಗಿ ಉತ್ತರಿಸಿ. ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸಿ.',
+    'en': 'You are Sahay, a helpful AI assistant. IMPORTANT: You MUST respond ONLY in English. Be concise and friendly. Answer questions clearly in English.',
+    'hi': 'आप सहाय हैं, एक सहायक AI असिस्टेंट। महत्वपूर्ण: आपको केवल हिंदी में उत्तर देना है। हर उत्तर हिंदी में होना चाहिए। संक्षिप्त और स्पष्ट हिंदी में जवाब दें।',
+    'ml': 'നിങ്ങൾ സഹായം എന്ന AI സഹായിയാണ്. പ്രധാനം: നിങ്ങൾ മലയാളത്തിൽ മാത്രം മറുപടി നൽകണം. എല്ലാ ഉത്തരങ്ങളും മലയാളത്തിൽ ആയിരിക്കണം.',
+    'kn': 'ನೀವು ಸಹಾಯ್ ಎಂಬ AI ಸಹಾಯಕರು. ಮುಖ್ಯ: ನೀವು ಕೇವಲ ಕನ್ನಡದಲ್ಲಿ ಮಾತ್ರ ಉತ್ತರಿಸಬೇಕು. ಎಲ್ಲಾ ಉತ್ತರಗಳು ಕನ್ನಡದಲ್ಲಿರಬೇಕು.',
     'auto': 'You are Sahay. Respond in the same language as the user. Be concise and helpful.'
   };
   return prompts[language] || prompts['auto'];
