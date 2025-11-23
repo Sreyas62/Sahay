@@ -6,19 +6,7 @@
 [![Platform](https://img.shields.io/badge/platform-Android%207%2B-green.svg)](https://www.android.com)
 [![React Native](https://img.shields.io/badge/React%20Native-0.75-blue.svg)](https://reactnative.dev)
 
-## 📥 Download the App
 
-<p align="center">
-  <a href="https://drive.google.com/file/d/1MbSsTOClA-awWNQT5QApJL4hRu3t51bb/view?usp=drive_link">
-    <img src="https://img.shields.io/badge/Download-APK-brightgreen?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" height="60">
-  </a>
-</p>
-
-<p align="center">
-  <strong>Version 1.0</strong> • <strong>Size: ~120 MB</strong> • <strong>Requires Android 7.0+</strong>
-</p>
-
-> **Note:** Since this app is not from the Play Store, you'll need to enable "Install from Unknown Sources" in your Android settings.
 
 ## 📋 Table of Contents
 
@@ -257,6 +245,20 @@ All AI components function completely offline after initial setup, ensuring priv
 - **Future-Proof**: Can adopt larger models as hardware improves
 
 The modular design ensures long-term sustainability and continuous growth while maintaining strong performance across diverse devices.
+
+## 📥 Download the App
+
+<p align="center">
+  <a href="https://drive.google.com/file/d/1MbSsTOClA-awWNQT5QApJL4hRu3t51bb/view?usp=drive_link">
+    <img src="https://img.shields.io/badge/Download-APK-brightgreen?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" height="60">
+  </a>
+</p>
+
+<p align="center">
+  <strong>Version 1.0</strong> • <strong>Size: ~120 MB</strong> • <strong>Requires Android 7.0+</strong>
+</p>
+
+> **Note:** Since this app is not from the Play Store, you'll need to enable "Install from Unknown Sources" in your Android settings.
 
 ## 🔗 Repository & Demo
 
