@@ -101,3 +101,7 @@ Thumbs.db
 
 # other common tools
 /.turbo/
+
+# APK files (too large for GitHub)
+*.apk
+*.aab
