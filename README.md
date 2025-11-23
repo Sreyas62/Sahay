@@ -2,6 +2,10 @@
 
 **Bridging the Digital Divide with Offline, Multilingual Voice AI**
 
+<p align="center">
+  <strong>Built by:</strong> Sreyas M Pillai • Aditi Pradeep • Abhishek K S
+</p>
+
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android%207%2B-green.svg)](https://www.android.com)
 [![React Native](https://img.shields.io/badge/React%20Native-0.75-blue.svg)](https://reactnative.dev)
